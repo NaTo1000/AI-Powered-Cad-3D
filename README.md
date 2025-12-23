@@ -16,8 +16,8 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
   - PostgreSQL (metadata)
   - Object storage/S3 (assets)
   - Redis (caching)
-  - Event bus (Kafka): durable ordered streams and replay-heavy pipelines (use when auditability, ordering, and backpressure handling matter)
-  - Event bus (NATS): low-latency control-plane fan-out and lightweight pub/sub (use for ephemeral, sub-second collaboration signals)
+  - Event bus (Kafka): durable ordered streams and replay-heavy pipelines (use when auditability, ordering, and backpressure handling matter; e.g., versioned deltas >10k events/sec, long-lived audit trails)
+  - Event bus (NATS): low-latency control-plane fan-out and lightweight pub/sub (use for ephemeral, sub-10ms collaboration signals such as presence/cursor updates)
 - **Domain boundaries**: Domain-Driven Design (DDD) bounded contexts isolate Modeling, Projects, Identity, and AI concerns.
 - **Orchestration & Ops**: Kubernetes for deployments, OpenTelemetry for tracing/metrics/logs, Argo/Temporal for long-running jobs.
 
@@ -43,8 +43,9 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
 - **Services**:
   - TypeScript/Node.js for gateway & orchestration
   - Python for AI inference
-  - Rust for safety-critical geometry kernels where deterministic performance outweighs ramp-up time; Go/TypeScript modules remain acceptable for less critical paths
+  - Rust for safety-critical geometry kernels where deterministic performance outweighs ramp-up time
   - Go for scalable concurrency and service ergonomics
+  - TypeScript/Go for non-critical geometry helpers and tooling where developer velocity is the priority
 - **Data**: PostgreSQL + PostGIS (spatial), Redis, MinIO/S3, Kafka/NATS.
 - **Infra**: Kubernetes + Helm, cert-manager, OpenTelemetry, Prometheus/Grafana, Vault for secrets.
 
@@ -84,8 +85,8 @@ POST /api/v1/designs/{designId}/ai/suggestions
 
 ## Quality, safety, and ops guardrails
 - Enforce **Domain-Driven Design (DDD)** boundaries per service so aggregates stay isolated.
-- Prefer **Protocol Buffers (protobuf)** for internal streaming/RPC contracts between services inside the cluster where strict versioning and performance are required.
-- Use **JSON schemas** for public or edge-facing APIs exposed through gateways to browsers, partners, or integrations.
+- Prefer **Protocol Buffers (protobuf)** for internal streaming/RPC contracts between services inside the cluster where strict versioning, binary efficiency, and compatibility with gRPC/async streaming are required.
+- Use **JSON schemas** for public or edge-facing APIs exposed through gateways to browsers, partners, or integrations where human-readability and polyglot client generation matter.
 - Apply **circuit breakers, retries, and idempotency keys** on write paths.
 - **RBAC/ABAC** at the gateway and per service, with audit trails for model suggestions and user overrides.
 - **Observability-first**: traces for user actions, AI decisions, and geometry operations; SLOs covering latency targets and error budget consumption.
