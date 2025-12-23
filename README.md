@@ -12,7 +12,11 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
 - **Collaboration & API Gateway**: GraphQL/REST gateway for client access, session management, and auth (OIDC/JWT).
 - **Design Core Services**: Domain services for sketching, constraints, parametric operations, and assembly management.
 - **AI Services**: Model-serving endpoints for generative geometry, feature ranking, and auto-dimensioning (batch & realtime).
-- **Data Plane**: PostgreSQL (metadata), object storage/S3 (assets), Redis (caching), event bus (Kafka for durable ordered streams; NATS for low-latency fan-out) for async flows.
+- **Data Plane**:
+  - PostgreSQL (metadata)
+  - Object storage/S3 (assets)
+  - Redis (caching)
+  - Event bus: Kafka for durable ordered streams; NATS for low-latency fan-out
 - **Domain boundaries**: Domain-Driven Design (DDD) bounded contexts isolate Modeling, Projects, Identity, and AI concerns.
 - **Orchestration & Ops**: Kubernetes for deployments, OpenTelemetry for tracing/metrics/logs, Argo/Temporal for long-running jobs.
 
@@ -35,7 +39,11 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
 
 ## Suggested tech stack (opinionated, replace as needed)
 - **Frontend**: React + Three.js (or Babylon.js), Zustand/Redux for state, Vite for builds.
-- **Services**: TypeScript/Node.js for gateway & orchestration; Python for AI inference; Go/Rust for high-performance geometry ops (Rust for safety-critical kernels; Go for scalable concurrency and tooling familiarity).
+- **Services**:
+  - TypeScript/Node.js for gateway & orchestration
+  - Python for AI inference
+  - Rust for safety-critical geometry kernels
+  - Go for scalable concurrency and service ergonomics
 - **Data**: PostgreSQL + PostGIS (spatial), Redis, MinIO/S3, Kafka/NATS.
 - **Infra**: Kubernetes + Helm, cert-manager, OpenTelemetry, Prometheus/Grafana, Vault for secrets.
 
