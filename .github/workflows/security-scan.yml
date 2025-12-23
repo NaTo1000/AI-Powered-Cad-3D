@@ -10,6 +10,10 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
 
+# Set minimum required permissions for security
+permissions:
+  contents: read
+
 jobs:
   codeql-analysis:
     name: CodeQL Security Analysis
@@ -34,6 +38,8 @@ jobs:
   dependency-scan:
     name: Dependency Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout repository
@@ -53,6 +59,8 @@ jobs:
   secret-scan:
     name: Secret Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout repository
@@ -76,6 +84,8 @@ jobs:
   vulnerability-assessment:
     name: Vulnerability Assessment
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout repository

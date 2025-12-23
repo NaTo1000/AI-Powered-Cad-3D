@@ -8,10 +8,16 @@ on:
     - cron: '0 3 * * 0'
   workflow_dispatch:
 
+# Set minimum required permissions for security
+permissions:
+  contents: read
+
 jobs:
   performance-test:
     name: Performance Testing
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout repository
@@ -50,6 +56,8 @@ jobs:
   resource-monitoring:
     name: Resource Usage Monitoring
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Monitor Memory Usage
