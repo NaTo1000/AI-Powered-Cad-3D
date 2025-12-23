@@ -55,7 +55,8 @@ codeunit 50001 "CAD3D Model Management"
         SupportedFormats: List of [Text];
         Format: Text;
     begin
-        CAD3DSetup.Get();
+        if not CAD3DSetup.Get() then
+            exit(true); // If setup doesn't exist, allow all formats
 
         // Extract file extension
         FileExtension := GetFileExtension(FilePath);

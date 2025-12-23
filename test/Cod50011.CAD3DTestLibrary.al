@@ -161,9 +161,13 @@ codeunit 50011 "CAD3D Test Library"
     procedure GetRandomModelType(): Enum "CAD3D Model Type"
     var
         ModelType: Enum "CAD3D Model Type";
+        ModelTypeCount: Integer;
         TypeInt: Integer;
     begin
-        TypeInt := Random(7);
+        // Get count of enum values (7 types: 0-6)
+        ModelTypeCount := 7;
+        TypeInt := Random(ModelTypeCount);
+
         case TypeInt of
             0:
                 exit(ModelType::Mechanical);

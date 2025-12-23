@@ -61,10 +61,15 @@ table 50000 "CAD3D Model"
             trigger OnValidate()
             var
                 CAD3DModelMgt: Codeunit "CAD3D Model Management";
+                CAD3DSetup: Record "CAD3D Setup";
             begin
-                if "File Path" <> '' then
-                    if not CAD3DModelMgt.ValidateModelFile("File Path") then
-                        Error('File format is not supported. Please check the supported formats in CAD3D Setup.');
+                if "File Path" <> '' then begin
+                    if not CAD3DModelMgt.ValidateModelFile("File Path") then begin
+                        CAD3DSetup.Get();
+                        Error('File format is not supported.\\Supported formats: %1\\File: %2',
+                              CAD3DSetup."Supported Formats", "File Path");
+                    end;
+                end;
             end;
         }
 

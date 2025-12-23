@@ -24,12 +24,17 @@ kind: Secret
 metadata:
   name: cad3d-secrets
   namespace: cad3d-app
+  annotations:
+    description: "SECURITY WARNING: Replace these placeholder values with actual secrets"
 type: Opaque
 stringData:
-  bc-username: admin
-  bc-password: P@ssw0rd123!
-  sql-password: SQLAdminP@ss123!
-  ai-api-key: your-ai-service-api-key-here
+  # IMPORTANT: These are EXAMPLE values only. 
+  # In production, use external secret management (e.g., Azure Key Vault, HashiCorp Vault)
+  # or create secrets via kubectl: kubectl create secret generic cad3d-secrets --from-literal=bc-username=...
+  bc-username: REPLACE_WITH_ACTUAL_USERNAME
+  bc-password: REPLACE_WITH_ACTUAL_PASSWORD
+  sql-password: REPLACE_WITH_ACTUAL_SQL_PASSWORD
+  ai-api-key: REPLACE_WITH_ACTUAL_API_KEY
 ---
 apiVersion: apps/v1
 kind: Deployment
