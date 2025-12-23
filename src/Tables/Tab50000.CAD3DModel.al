@@ -57,6 +57,15 @@ table 50000 "CAD3D Model"
         {
             Caption = 'File Path';
             DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            var
+                CAD3DModelMgt: Codeunit "CAD3D Model Management";
+            begin
+                if "File Path" <> '' then
+                    if not CAD3DModelMgt.ValidateModelFile("File Path") then
+                        Error('File format is not supported. Please check the supported formats in CAD3D Setup.');
+            end;
         }
 
         field(7; "File Size"; Decimal)

@@ -208,7 +208,7 @@ codeunit 50010 "CAD3D Model Test"
 
         // [WHEN] File is validated
         // [THEN] Validation fails
-        asserterror CAD3DModelMgt.ValidateModelFile(ValidFilePath);
+        Assert.IsFalse(CAD3DModelMgt.ValidateModelFile(ValidFilePath), 'XYZ format should not be valid');
     end;
 
     [Test]

@@ -68,8 +68,7 @@ codeunit 50001 "CAD3D Model Management"
                 exit(true);
         end;
 
-        Error('File format %1 is not supported. Supported formats: %2',
-              FileExtension, CAD3DSetup."Supported Formats");
+        exit(false);
     end;
 
     local procedure GetFileExtension(FilePath: Text[250]): Text[10]
