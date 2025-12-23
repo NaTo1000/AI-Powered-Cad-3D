@@ -11,7 +11,7 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
 - **Experience**: Web/desktop UI built on WebGL/Three.js for interactive modeling and real-time previews.
 - **Collaboration & API Gateway**: GraphQL/REST gateway for client access, session management, and auth (OIDC/JWT).
 - **Design Core Services**: Domain services for sketching, constraints, parametric operations, and assembly management.
-- **AI Services**: Model-serving endpoints for generative geometry, feature ranking, and auto-dimensioning (batch & realtime).
+- **AI Services**: Model-serving endpoints for generative geometry, feature ranking, and auto-dimensioning (batch & real-time).
 - **Data Plane**:
   - PostgreSQL (metadata)
   - Object storage/S3 (assets)
