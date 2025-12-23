@@ -16,7 +16,7 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
   - PostgreSQL (metadata)
   - Object storage/S3 (assets)
   - Redis (caching)
-  - Event bus: Kafka for durable ordered streams; NATS for low-latency fan-out
+  - Event bus: Kafka for durable ordered streams and replay-heavy pipelines; NATS for low-latency control-plane fan-out and lightweight pub/sub
 - **Domain boundaries**: Domain-Driven Design (DDD) bounded contexts isolate Modeling, Projects, Identity, and AI concerns.
 - **Orchestration & Ops**: Kubernetes for deployments, OpenTelemetry for tracing/metrics/logs, Argo/Temporal for long-running jobs.
 
@@ -82,7 +82,7 @@ POST /api/v1/designs/{designId}/ai/suggestions
 ```
 
 ## Quality, safety, and ops guardrails
-- Enforce **Domain-Driven Design (DDD)** boundaries per service; share only stable contracts via Protocol Buffers (protobuf) or JSON schemas.
+- Enforce **Domain-Driven Design (DDD)** boundaries per service; share only stable contracts via Protocol Buffers (protobuf) for internal streaming/RPC and JSON schemas for public or edge-facing APIs.
 - Apply **circuit breakers, retries, and idempotency keys** on write paths.
 - **RBAC/ABAC** at the gateway and per service, with audit trails for model suggestions and user overrides.
 - **Observability-first**: traces for user actions, AI decisions, and geometry operations; SLOs covering latency targets and error budget consumption.
