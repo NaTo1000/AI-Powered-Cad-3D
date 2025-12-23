@@ -73,7 +73,7 @@ POST /api/v1/designs/{designId}/ai/suggestions
 ```
 
 ## Quality, safety, and ops guardrails
-- Enforce **DDD** boundaries per service; share only stable contracts via protobuf/JSON schemas.
+- Enforce **Domain-Driven Design (DDD)** boundaries per service; share only stable contracts via protobuf/JSON schemas.
 - Apply **circuit breakers, retries, and idempotency keys** on write paths.
 - **RBAC/ABAC** at the gateway and per service, with audit trails for model suggestions and user overrides.
 - **Observability-first**: traces for user actions, AI decisions, and geometry operations; SLOs on latency and error budgets.
