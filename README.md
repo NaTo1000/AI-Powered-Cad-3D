@@ -22,7 +22,7 @@ Enterprise-ready blueprint for an AI-assisted 3D CAD platform with clear domain 
 
 ## Core domains & responsibilities
 | Domain | Responsibility |
-| --- | --- |
+| :--- | :--- |
 | **Identity & Access** | OIDC/JWT auth, RBAC/ABAC policies, tenant scoping |
 | **Projects & Versions** | Project lifecycle, immutable versions, branching/merging, approvals |
 | **Modeling** | Sketching, constraints, parametric features, assembly relationships |
@@ -82,10 +82,10 @@ POST /api/v1/designs/{designId}/ai/suggestions
 ```
 
 ## Quality, safety, and ops guardrails
-- Enforce **Domain-Driven Design (DDD)** boundaries per service; share only stable contracts via protobuf/JSON schemas.
+- Enforce **Domain-Driven Design (DDD)** boundaries per service; share only stable contracts via Protocol Buffers (protobuf) or JSON schemas.
 - Apply **circuit breakers, retries, and idempotency keys** on write paths.
 - **RBAC/ABAC** at the gateway and per service, with audit trails for model suggestions and user overrides.
-- **Observability-first**: traces for user actions, AI decisions, and geometry operations; SLOs on latency and error budgets.
+- **Observability-first**: traces for user actions, AI decisions, and geometry operations; SLOs covering latency targets and error budget consumption.
 
 ## Next steps
 - Scaffold the proposed folder layout with CI skeletons.
