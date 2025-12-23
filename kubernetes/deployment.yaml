@@ -1,0 +1,285 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cad3d-app
+  labels:
+    name: cad3d-app
+    environment: production
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cad3d-config
+  namespace: cad3d-app
+data:
+  BC_ACCEPT_EULA: "Y"
+  BC_ACCEPT_OUTDATED: "Y"
+  BC_USE_SSL: "N"
+  BC_UPDATE_HOSTS: "N"
+  LOG_LEVEL: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cad3d-secrets
+  namespace: cad3d-app
+type: Opaque
+stringData:
+  bc-username: admin
+  bc-password: P@ssw0rd123!
+  sql-password: SQLAdminP@ss123!
+  ai-api-key: your-ai-service-api-key-here
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cad3d-bc-deployment
+  namespace: cad3d-app
+  labels:
+    app: cad3d-bc
+    tier: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cad3d-bc
+  template:
+    metadata:
+      labels:
+        app: cad3d-bc
+        tier: application
+    spec:
+      containers:
+      - name: business-central
+        image: mcr.microsoft.com/businesscentral/onprem:latest
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        - containerPort: 7046
+          name: dev-service
+        envFrom:
+        - configMapRef:
+            name: cad3d-config
+        env:
+        - name: username
+          valueFrom:
+            secretKeyRef:
+              name: cad3d-secrets
+              key: bc-username
+        - name: password
+          valueFrom:
+            secretKeyRef:
+              name: cad3d-secrets
+              key: bc-password
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+        livenessProbe:
+          httpGet:
+            path: /BC/HealthCheck
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /BC/HealthCheck
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: bc-data
+          mountPath: /data
+      volumes:
+      - name: bc-data
+        persistentVolumeClaim:
+          claimName: cad3d-bc-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cad3d-bc-service
+  namespace: cad3d-app
+  labels:
+    app: cad3d-bc
+spec:
+  type: LoadBalancer
+  selector:
+    app: cad3d-bc
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 443
+    protocol: TCP
+  - name: dev-service
+    port: 7046
+    targetPort: 7046
+    protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cad3d-bc-pvc
+  namespace: cad3d-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cad3d-sql
+  namespace: cad3d-app
+  labels:
+    app: cad3d-sql
+    tier: database
+spec:
+  serviceName: cad3d-sql-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cad3d-sql
+  template:
+    metadata:
+      labels:
+        app: cad3d-sql
+        tier: database
+    spec:
+      containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+        - containerPort: 1433
+          name: mssql
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: MSSQL_PID
+          value: "Enterprise"
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cad3d-secrets
+              key: sql-password
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "16Gi"
+            cpu: "8000m"
+        volumeMounts:
+        - name: mssql-data
+          mountPath: /var/opt/mssql
+        livenessProbe:
+          exec:
+            command:
+            - /opt/mssql-tools/bin/sqlcmd
+            - -S
+            - localhost
+            - -U
+            - sa
+            - -P
+            - $(SA_PASSWORD)
+            - -Q
+            - SELECT 1
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: mssql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Gi
+      storageClassName: standard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cad3d-sql-service
+  namespace: cad3d-app
+  labels:
+    app: cad3d-sql
+spec:
+  type: ClusterIP
+  selector:
+    app: cad3d-sql
+  ports:
+  - name: mssql
+    port: 1433
+    targetPort: 1433
+    protocol: TCP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cad3d-bc-hpa
+  namespace: cad3d-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cad3d-bc-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cad3d-ingress
+  namespace: cad3d-app
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+spec:
+  tls:
+  - hosts:
+    - cad3d.yourdomain.com
+    secretName: cad3d-tls-secret
+  rules:
+  - host: cad3d.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cad3d-bc-service
+            port:
+              number: 80

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Business Central Container
+  bc-server:
+    build: .
+    container_name: cad3d-bc-server
+    hostname: bcserver
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "7045-7049:7045-7049"
+    environment:
+      - accept_eula=Y
+      - accept_outdated=Y
+      - username=admin
+      - password=P@ssw0rd123!
+      - usessl=N
+      - updatehosts=N
+      - customNavSettings=EnableSymbolLoadingAtServerStartup=false
+    volumes:
+      - bc-data:/data
+      - ./src:/app/src:ro
+      - ./app.json:/app/app.json:ro
+    networks:
+      - cad3d-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "powershell", "-Command", "Invoke-WebRequest -Uri 'http://localhost/BC/HealthCheck' -UseBasicParsing"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # SQL Server (for development)
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: cad3d-sql-server
+    hostname: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssw0rd123!
+      - MSSQL_PID=Developer
+    volumes:
+      - sql-data:/var/opt/mssql
+      - ./database/scripts:/scripts:ro
+    networks:
+      - cad3d-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@ssw0rd123! -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # AI Service Mock (for development/testing)
+  ai-service:
+    image: nginx:alpine
+    container_name: cad3d-ai-service
+    hostname: aiservice
+    ports:
+      - "8081:80"
+    volumes:
+      - ./mock-ai-service:/usr/share/nginx/html:ro
+    networks:
+      - cad3d-network
+    restart: unless-stopped
+
+volumes:
+  bc-data:
+    driver: local
+  sql-data:
+    driver: local
+
+networks:
+  cad3d-network:
+    driver: bridge
