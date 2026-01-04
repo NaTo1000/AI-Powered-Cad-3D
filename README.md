@@ -123,7 +123,8 @@ AI-Powered-Cad-3D/
 │   ├── Enums/             # Enumeration types
 │   ├── Queries/           # Data queries
 │   ├── Reports/           # Report objects
-│   └── XMLports/          # Data import/export
+│   ├── XMLports/          # Data import/export
+│   └── PermissionSets/    # Role-based access control definitions
 ├── app.json               # AL project configuration
 └── README.md              # This file
 ```
