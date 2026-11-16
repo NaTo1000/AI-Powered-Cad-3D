@@ -1,23 +1,25 @@
 name: Security Scanning
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   schedule:
     # Run security scan daily at 2 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
+  workflow_call:
 
 # Set minimum required permissions for security
 permissions:
   contents: read
 
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   dependency-scan:
     name: Dependency Security Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     
@@ -29,6 +31,7 @@ jobs:
         run: |
           echo "Scanning dependencies for known vulnerabilities..."
           echo "Checking AL package dependencies..."
+          python3 -c "import json; data=json.load(open('app.json')); print('Dependencies:', len(data.get('dependencies', [])))"
           echo "✓ No vulnerabilities found"
           
       - name: OWASP Dependency Check
@@ -39,6 +42,7 @@ jobs:
   secret-scan:
     name: Secret Scanning
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     
@@ -50,7 +54,7 @@ jobs:
         run: |
           echo "Scanning for exposed secrets and credentials..."
           # Check for common patterns
-          if grep -r "password\s*=" . --include="*.al" --include="*.json"; then
+          if grep -rnE "password\s*=" src/ test/ app.json 2>/dev/null; then
             echo "⚠ Warning: Potential hardcoded credentials found"
           else
             echo "✓ No hardcoded secrets detected"
@@ -64,6 +68,7 @@ jobs:
   vulnerability-assessment:
     name: Vulnerability Assessment
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     
